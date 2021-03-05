@@ -1,12 +1,13 @@
 module NumerAPI
   
-  using JSON, HTTP, Dates
+  using JSON, HTTP, Dates, TimeZones
 
   export PUBLIC_DATASETS_URL,
          TournamentAPI,
          get_dataset_url,
          download_current_dataset,
          get_latest_data_url,
+         download_latest_data,
          get_competitions,
          get_current_round,
          get_tournaments,
@@ -32,7 +33,9 @@ module NumerAPI
          daily_user_performances,
          round_details,
          daily_submission_performances,
-         ticker_universe
+         ticker_universe,
+         ensure_directory_exists,
+         download_file
          
          
 
