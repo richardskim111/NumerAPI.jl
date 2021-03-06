@@ -675,7 +675,7 @@ function round_details(api::TournamentAPI, round_num::Int)::Vector{Dict}
   performances = data["userPerformances"]
 
   for perf in performances
-    perf["date"] = parse_datetime_string(perf["date"])
+    perf["date"] = DateTime(perf["date"], "yyyy-mm-dd")
   end
   return performances
 end
@@ -702,5 +702,6 @@ function daily_submission_performances(api::TournamentAPI, username::String)::Ve
   for perf in performances
     perf["date"] = parse_datetime_string(perf["date"])
   end
+  
   return performances
 end

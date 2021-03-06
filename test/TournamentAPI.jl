@@ -20,12 +20,12 @@ module TestTournamentAPI
   # end
   
 
-  @testset "test get_dataset_url" begin
-    url = get_dataset_url(tournament_api, tournament=8)
+  # @testset "test get_dataset_url" begin
+  #   url = get_dataset_url(tournament_api, tournament=8)
 
-    @test typeof(url) === String
-    @test occursin("numerai-datasets", url)
-  end
+  #   @test typeof(url) === String
+  #   @test occursin("numerai-datasets", url)
+  # end
 
 
   # @testset "test download_current_dataset" begin
@@ -38,20 +38,20 @@ module TestTournamentAPI
   # end  
   
 
-  @testset "test get_latest_data_url" begin
-    data_type = "tournament"
-    extension = "csv"
-    url = get_latest_data_url(tournament_api, data_type, extension)
+  # @testset "test get_latest_data_url" begin
+  #   data_type = "tournament"
+  #   extension = "csv"
+  #   url = get_latest_data_url(tournament_api, data_type, extension)
     
-    @test url == "$(PUBLIC_DATASETS_URL)/latest_numerai_$(data_type)_data.$(extension)"
+  #   @test url == "$(PUBLIC_DATASETS_URL)/latest_numerai_$(data_type)_data.$(extension)"
 
-    try
-      get_latest_data_url("not_valid_data_type", "csv")
-    catch ArgumentError
-      @test true
-    end
+  #   try
+  #     get_latest_data_url("not_valid_data_type", "csv")
+  #   catch ArgumentError
+  #     @test true
+  #   end
 
-  end
+  # end
 
 
   # @testset "test download_latest_data" begin
@@ -139,39 +139,45 @@ module TestTournamentAPI
   # end
 
   
-  @testset "test submission_status" begin
-    latest_submission = submission_status(tournament_api, model_id=model_id)
+  # @testset "test submission_status" begin
+  #   latest_submission = submission_status(tournament_api, model_id=model_id)
 
-    @test !isnothing(latest_submission)
-    @test haskey(latest_submission, "filename")
-  end
+  #   @test !isnothing(latest_submission)
+  #   @test haskey(latest_submission, "filename")
+  # end
 
   # @testset "test upload_predictions" begin
   #   submission_id = upload_predictions(tournament_api, "./prediction.csv"; model_id=model_id)
 
   #   println(submission_id)
   #   @test isa(submission_id, String)
-
   # end
 
 
   # @testset "test check_new_round" begin
-    
+  #   is_new_round = check_new_round(tournament_api)
+  #   @test 
   # end
 
 
   # @testset "test tournament_number2name" begin
-    
+  #   tournament_name = tournament_number2name(tournament_api, 8)
+
+  #   @test tournament_name === "kazutsugi"
   # end
 
 
   # @testset "test tournament_name2number" begin
-    
+  #   tournament_number = tournament_name2number(tournament_api, "kazutsugi")
+
+  #   @test tournament_number === 8
   # end
 
 
   # @testset "test get_leaderboard" begin
-    
+  #   leaderboard = get_leaderboard(tournament_api)
+
+  #   @test length(leaderboard) === 50
   # end
 
 
@@ -206,22 +212,31 @@ module TestTournamentAPI
 
 
   # @testset "test public_user_profile" begin
-    
+  #   user_profile = public_user_profile(tournament_api, username)
+
+  #   @test user_profile["username"] === username
+  #   @test user_profile["id"] === model_id
   # end
 
 
   # @testset "test daily_user_performances" begin
-    
+  #   performances = daily_user_performances(tournament_api, username)
+
+  #   @test typeof(performances) === Vector{Dict}
   # end
 
 
   # @testset "test round_details" begin
-    
+  #   performances = round_details(tournament_api, 253)
+
+  #   @test typeof(performances) === Vector{Dict}
   # end
 
 
   # @testset "test daily_submission_performances" begin
-    
+  #   performances = daily_submission_performances(tournament_api, username)
+
+  #   @test performances[1]["date"] > performances[2]["date"] 
   # end
 
 end # module

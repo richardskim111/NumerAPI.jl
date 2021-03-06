@@ -68,17 +68,3 @@ function unzip_file(src_path::String, dest_path::String, filename::String)
   InfoZIP.unzip(src_path, unzip_path)
 
 end
-
-# def _unzip_file(self, src_path, dest_path, filename):
-#   """unzips file located at src_path into destination_path"""
-#   self.logger.info("unzipping file...")
-
-#   # construct full path (including file name) for unzipping
-#   unzip_path = os.path.join(dest_path, filename)
-#   utils.ensure_directory_exists(unzip_path)
-
-#   # extract data
-#   with zipfile.ZipFile(src_path, "r") as z:
-#       z.extractall(unzip_path)
-
-#   return True
