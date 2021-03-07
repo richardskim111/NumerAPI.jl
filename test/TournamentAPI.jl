@@ -5,8 +5,8 @@ module TestTournamentAPI
   
   public_id = ENV["NUMERAI_PUBLIC_ID"]
   secret_key = ENV["NUMERAI_SECRET_KEY"]
-  username = ENV["USERNAME"]
-  model_id = ENV["MODEL_ID"]
+  username = ENV["TOURNAMENT_USERNAME"]
+  model_id = ENV["TOURNAMENT_MODEL_ID"]
 
   
   tournament_api = TournamentAPI(public_id, secret_key)
@@ -19,6 +19,45 @@ module TestTournamentAPI
   #   @test tournament_api.public_dataset_url === PUBLIC_DATASETS_URL
   # end
   
+
+  # Test Base API Functions
+  @testset "test login" begin
+    
+  end
+
+
+  @testset "test raw_query" begin
+    
+  end
+
+
+  @testset "test get_account" begin
+    
+
+  end
+
+
+  @testset "test get_models" begin
+    
+  end
+
+
+  @testset "test get_account_transactions" begin
+    
+  end
+
+
+  @testst "test get_transactions" begin
+    
+  end
+
+
+  @testst "test get_current_round" begin
+    
+  end
+
+
+
 
   # @testset "test get_dataset_url" begin
   #   url = get_dataset_url(tournament_api, tournament=8)
