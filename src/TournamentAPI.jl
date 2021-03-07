@@ -75,7 +75,7 @@ function download_current_dataset(api::TournamentAPI;
     dest_filename = "numerai_dataset_$(round_number).zip"
   else
     if unzip & !endswith(dest_filename, ".zip")
-      dest_filename += ".zip"
+      dest_filename *= ".zip"
     end
   end
   dataset_path = joinpath(dest_path, dest_filename)
