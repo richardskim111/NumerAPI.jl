@@ -1,3 +1,4 @@
 
 
-include("TournamentAPI.jl")
+# include("TournamentAPI.jl")
+include("SignalsAPI.jl")

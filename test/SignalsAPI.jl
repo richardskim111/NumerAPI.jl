@@ -17,24 +17,26 @@ module TestSignalsAPI
   end
 
 
-  @test "test upload_predictions" begin
+  @testset "test upload_predictions" begin
     
 
   end
 
 
-  @test "test daily_submissions_performances" begin
+  @testset "test daily_submissions_performances" begin
     
   end
 
 
-  @test "test daily_user_performances" begin
+  @testset "test daily_user_performances" begin
     
   end
 
 
-  @test "test ticker_universe" begin
-    
+  @testset "test ticker_universe" begin
+    tickers = ticker_universe(signals_api)
+
+    @test typeof(tickers) == Vector{String}
   end
 
 end # module

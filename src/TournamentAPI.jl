@@ -2,6 +2,7 @@
 const PUBLIC_DATASETS_URL = "https://numerai-public-datasets.s3-us-west-2.amazonaws.com"
 const TOURNAMENT = 8
 
+
 struct TournamentAPI <: BaseAPI
   public_id::Union{String,Nothing}
   secret_key::Union{String,Nothing}
@@ -15,7 +16,6 @@ function TournamentAPI(public_id::Union{String,Nothing},
                        secret_key::Union{String,Nothing}; 
                        verbosity::Bool=true, 
                        show_progress_bars::Bool=true)
-
   return TournamentAPI(public_id, 
                         secret_key, 
                         verbosity, 

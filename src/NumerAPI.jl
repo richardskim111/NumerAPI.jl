@@ -4,6 +4,7 @@ module NumerAPI
 
   export PUBLIC_DATASETS_URL,
          TournamentAPI,
+         SignalsAPI,
          get_dataset_url,
          download_current_dataset,
          get_latest_data_url,
@@ -46,7 +47,5 @@ module NumerAPI
   include("TournamentAPI.jl")
 
   include("SignalsAPI.jl")
-
-
 
 end # module

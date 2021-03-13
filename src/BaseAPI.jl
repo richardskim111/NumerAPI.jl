@@ -15,9 +15,9 @@ function raw_query(api::BaseAPI, query::String;
 
   body = Dict( "query" => query, "variables" => variables )
   
-  headers = Dict(
-      "Content-Type" => "application/json", 
-      "Accept" => "application/json",
+  headers = Dict( 
+    "Content-Type" => "application/json", 
+    "Accept" => "application/json"
   )
   
   if authorization
