@@ -1,6 +1,8 @@
 module Tournament
 
+  using JSON, HTTP, Dates, TimeZones
   include("BaseAPI.jl")
+
 
   export TournamentAPI,
           check_new_round,

@@ -1,5 +1,6 @@
 module Signals
   
+  using JSON, HTTP, Dates, TimeZones
   include("BaseAPI.jl")
 
   export SignalsAPI, 
