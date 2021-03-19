@@ -591,7 +591,10 @@ module Tournament
   end
 
 
-  """Set stake to value by decreasing or increasing your current stake
+  """
+    stake_set(api::TournamentAPI, nmr::Union{Float64,String})::Union{Dict,Nothing}
+  
+  Set stake to value by decreasing or increasing your current stake
   """
   function stake_set(api::TournamentAPI, nmr::Union{Float64,String})::Union{Dict,Nothing}
     username = get_account(api)["username"]
@@ -619,16 +622,10 @@ module Tournament
   end
 
 
-  """Get your current stake amount.
-    Args:
-        username (str)
-    Returns:
-        float: current stake (including projected NMR earnings from open
-              rounds)
-    Example:
-        >>> api = NumerAPI()
-        >>> api.stake_get("uuazed")
-        1.1
+  """
+    stake_get(api::TournamentAPI, username::String)::Float64
+
+  Get your current stake amount.
   """
   function stake_get(api::TournamentAPI, username::String)::Float64
     query = """
@@ -649,28 +646,14 @@ module Tournament
   end
 
 
-  """Change stake by `value` NMR.
-    Args:
-        nmr (float or str): amount of NMR you want to increase/decrease
-        action (str): `increase` or `decrease`
-        model_id (str): Target model UUID (required for accounts with
-            multiple models)
-        tournament (int): ID of the tournament (optional, defaults to 8)
-            -- DEPRECATED there is only one tournament nowadays
-    Returns:
-        dict: stake information with the following content:
-          * dueDate (`datetime`)
-          * status (`str`)
-          * requestedAmount (`decimal.Decimal`)
-          * type (`str`)
-    Example:
-        >>> api = NumerAPI(secret_key="..", public_id="..")
-        >>> model = api.get_models()['uuazed']
-        >>> api.stake_change(10, "decrease", model)
-        {'dueDate': None,
-        'requestedAmount': decimal.Decimal('10'),
-        'type': 'decrease',
-        'status': ''}
+  """
+    stake_change(api::TournamentAPI, 
+                  nmr::Union{Float64,String};
+                  action::String="decrease", 
+                  model_id::Union{String,Nothing}=nothing,
+                  tournament::Int=TOURNAMENT)::Dict
+  
+  Change stake by `value` NMR.
   """
   function stake_change(api::TournamentAPI, nmr::Union{Float64,String};
                         action::String="decrease", 
@@ -700,26 +683,12 @@ module Tournament
   end
 
 
-  """Completely remove your stake.
-    Args:
-        model_id (str): Target model UUID (required for accounts with
-            multiple models)
-        tournament (int): ID of the tournament (optional, defaults to 8)
-            -- DEPRECATED there is only one tournament nowadays
-    Returns:
-        dict: stake information with the following content:
-          * dueDate (`datetime`)
-          * status (`str`)
-          * requestedAmount (`decimal.Decimal`)
-          * type (`str`)
-    Example:
-        >>> api = NumerAPI(secret_key="..", public_id="..")
-        >>> model = api.get_models()['uuazed']
-        >>> api.stake_drain(model)
-        {'dueDate': None,
-        'requestedAmount': decimal.Decimal('11000000'),
-        'type': 'decrease',
-        'status': ''}
+  """
+    stake_drain(api::TournamentAPI; 
+                model_id::Union{String,Nothing}=nothing, 
+                tournament::Int=TOURNAMENT)::Dict
+  
+  Completely remove your stake.
   """
   function stake_drain(api::TournamentAPI; 
                         model_id::Union{String,Nothing}=nothing, 
@@ -728,27 +697,12 @@ module Tournament
   end
 
 
-  """Decrease your stake by `value` NMR.
-    Args:
-        nmr (float or str): amount of NMR you want to reduce
-        model_id (str): Target model UUID (required for accounts with
-            multiple models)
-        tournament (int): ID of the tournament (optional, defaults to 8)
-            -- DEPRECATED there is only one tournament nowadays
-    Returns:
-        dict: stake information with the following content:
-          * dueDate (`datetime`)
-          * status (`str`)
-          * requestedAmount (`decimal.Decimal`)
-          * type (`str`)
-    Example:
-        >>> api = NumerAPI(secret_key="..", public_id="..")
-        >>> model = api.get_models()['uuazed']
-        >>> api.stake_decrease(10, model)
-        {'dueDate': None,
-        'requestedAmount': decimal.Decimal('10'),
-        'type': 'decrease',
-        'status': ''}
+  """
+    stake_decrease(api::TournamentAPI, nmr::Union{Float64,String};
+                    model_id::Union{String,Nothing}=nothing,
+                    tournament::Int=TOURNAMENT)::Dict
+  
+  Decrease your stake by `value` NMR.
   """
   function stake_decrease(api::TournamentAPI, nmr::Union{Float64,String};
                           model_id::Union{String,Nothing}=nothing,
@@ -757,27 +711,12 @@ module Tournament
   end
 
 
-  """Increase your stake by `value` NMR.
-    Args:
-        nmr (float or str): amount of additional NMR you want to stake
-        model_id (str): Target model UUID (required for accounts with
-            multiple models)
-        tournament (int): ID of the tournament (optional, defaults to 8)
-            -- DEPRECATED there is only one tournament nowadays
-    Returns:
-        dict: stake information with the following content:
-          * dueDate (`datetime`)
-          * status (`str`)
-          * requestedAmount (`decimal.Decimal`)
-          * type (`str`)
-    Example:
-        >>> api = NumerAPI(secret_key="..", public_id="..")
-        >>> model = api.get_models()['uuazed']
-        >>> api.stake_increase(10, model)
-        {'dueDate': None,
-        'requestedAmount': decimal.Decimal('10'),
-        'type': 'increase',
-        'status': ''}
+  """
+    stake_increase(api::TournamentAPI, nmr::Union{Float64,String};
+                    model_id::Union{String,Nothing}=nothing,
+                    tournament::Int=TOURNAMENT)::Dict
+
+  Increase your stake by `value` NMR.
   """
   function stake_increase(api::TournamentAPI, nmr::Union{Float64,String};
                           model_id::Union{String,Nothing}=nothing,
@@ -786,32 +725,10 @@ module Tournament
   end
 
 
-  """Fetch the public profile of a user.
-    Args:
-        username (str)
-    Returns:
-        dict: user profile including the following fields:
-            * username (`str`)
-            * startDate (`datetime`)
-            * netEarnings (`float`)
-            * id (`string`)
-            * historicalNetUsdEarnings (`float`)
-            * historicalNetNmrEarnings (`float`)
-            * badges (`list of str`)
-            * bio (`str`)
-            * totalStake (`float`)
-    Example:
-        >>> api = NumerAPI()
-        >>> api.public_user_profile("niam")
-        {'username': 'niam',
-        'startDate': datetime.datetime(2018, 6, 14, 22, 58, 2, 186221),
-        'netEarnings': None,
-        'id': '024c9bb9-77af-4b3f-91c7-63062fce2b80',
-        'historicalNetUsdEarnings': '3669.41',
-        'historicalNetNmrEarnings': '1094.247665827645663410',
-        'badges': ['burned_3', 'compute_0', 'submission-streak_1'],
-        'bio': 'blabla',
-        'totalStake': 12.2}
+  """
+    public_user_profile(api::TournamentAPI, username::String)::Dict
+  
+  Fetch the public profile of a user.
   """
   function public_user_profile(api::TournamentAPI, username::String)::Dict
     query = """
@@ -837,44 +754,10 @@ module Tournament
   end
 
 
-  """Fetch daily performance of a user.
-    Args:
-        username (str)
-    Returns:
-        list of dicts: list of daily user performance entries
-        For each entry in the list, there is a dict with the following
-        content:
-            * tier (`str`)
-            * stakeValue (`float` or none)
-            * reputation (`float`) -- DEPRECATED since 2020-04-05
-            * rolling_score_rep (`float`)
-            * rank (`int`)
-            * leaderboardBonus (`float` or None)
-            * date (`datetime`)
-            * averageCorrelationPayout (`float` or None)
-            * averageCorrelation (`float`)
-            * sumDeltaCorrelation (`float`)
-            * finalCorrelation (`float`)
-            * payoutPending (`float` or None)
-            * payoutSettled (`float` or None)
-    Example:
-        >>> api = NumerAPI()
-        >>> api.daily_user_performances("uuazed")
-        [{'tier': 'A',
-          'stakeValue': None,
-          'reputation': 0.0017099,
-          'rolling_score_rep': 0.0111,
-          'rank': 32,
-          'leaderboardBonus': None,
-          'date': datetime.datetime(2019, 10, 16, 0, 0),
-          'averageCorrelationPayout': None,
-          'averageCorrelation': -0.000983637,
-          'sumDeltaCorrelation': -0.000983637,
-          'finalCorrelation': -0.000983637,
-          'payoutPending': None,
-          'payoutSettled': None},
-          ...
-        ]
+  """
+    daily_user_performances(api::TournamentAPI, username::String)::Vector{Dict}
+  
+  Fetch daily performance of a user.
   """
   function daily_user_performances(api::TournamentAPI, username::String)::Vector{Dict}
     query = """
@@ -910,24 +793,10 @@ module Tournament
   end
 
 
-  """Fetch all correlation scores of a round.
-    Args:
-        round_num (int)
-    Returns:
-        list of dicts: list containing scores for each user
-        For each entry in the list, there is a dict with the following
-        content:
-            * date (`datetime`)
-            * correlation (`float`)
-            * username (`str`)
-    Example:
-        >>> api = NumerAPI()
-        >>> api.round_details(180)
-        [{'username': 'abcd',
-          'date': datetime.datetime(2019, 11, 15, 0, 0),
-          'correlation': 0.02116131087},
-          ...
-        ]
+  """
+    round_details(api::TournamentAPI, round_num::Int)::Vector{Dict}
+  
+  Fetch all correlation scores of a round.
   """
   function round_details(api::TournamentAPI, round_num::Int)::Vector{Dict}
     query = """
@@ -952,30 +821,10 @@ module Tournament
   end
 
 
-  """Fetch daily performance of a user's submissions.
-    Args:
-        username (str)
-    Returns:
-        list of dicts: list of daily submission performance entries
-        For each entry in the list, there is a dict with the following
-        content:
-            * date (`datetime`)
-            * correlation (`float`)
-            * roundNumber (`int`)
-            * mmc (`float`): metamodel contribution
-            * fnc (`float`): feature neutral correlation
-            * correlationWithMetamodel (`float`)
-    Example:
-        >>> api = NumerAPI()
-        >>> api.daily_user_performances("uuazed")
-        [{'roundNumber': 181,
-          'correlation': -0.011765912,
-          'date': datetime.datetime(2019, 10, 16, 0, 0),
-          'mmc': 0.3,
-          'fnc': 0.1,
-          'correlationWithMetamodel': 0.87},
-          ...
-        ]
+  """
+    daily_submission_performances(api::TournamentAPI, username::String)::Vector{Dict}
+  
+  Fetch daily performance of a user's submissions.
   """
   function daily_submission_performances(api::TournamentAPI, username::String)::Vector{Dict}
     query = """
