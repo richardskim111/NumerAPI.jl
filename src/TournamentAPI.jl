@@ -51,7 +51,7 @@ module Tournament
   end
 
   """
-    get_dataset_url(api::TournamentAPI) -> String
+      get_dataset_url(api::TournamentAPI)::String
   
   Fetch url of the current dataset
 
@@ -75,12 +75,12 @@ module Tournament
 
 
   """
-    download_current_dataset(api::TournamentAPI, 
-                              dest_path::String=".", 
-                              dest_filename::Union{String,Nothing}=nothing,
-                              unzip::Bool=true, 
-                              tournament::Int=TOURNAMENT,
-                              show_progress_bar::Bool=true) -> String
+      download_current_dataset(api::TournamentAPI, 
+                                dest_path::String=".", 
+                                dest_filename::Union{String,Nothing}=nothing,
+                                unzip::Bool=true, 
+                                tournament::Int=TOURNAMENT,
+                                show_progress_bar::Bool=true)::String
 
   Download dataset for the current active round.
   
