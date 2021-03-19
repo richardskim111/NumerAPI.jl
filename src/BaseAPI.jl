@@ -58,7 +58,7 @@ function get_transactions(api::BaseAPI; model_id::Union{String,Nothing}=nothing)
 end
 
 
-function get_current_round(api::BaseAPI, tournament::Int)::Union{Real,Nothing}
+function get_current_round(api::BaseAPI)::Union{Real,Nothing}
   query = """
     query(\$tournament: Int!) {
       rounds(tournament: \$tournament number: 0) {
@@ -66,7 +66,7 @@ function get_current_round(api::BaseAPI, tournament::Int)::Union{Real,Nothing}
       }
     }
   """
-  variables = Dict("tournament" => tournament)
+  variables = Dict( "tournament" => api.tournament )
   data = raw_query(api, query, variables=variables)["data"]["rounds"][1]
   round_num = isempty(data) ? nothing : data["number"]
   return round_num

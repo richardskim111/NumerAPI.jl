@@ -58,7 +58,7 @@ module Tournament
   # Example
   ```julia-repl
   julia>  get_dataset_url(tournament_api)
-  ````
+  ```
   """
   function get_dataset_url(api::TournamentAPI)::String
     query = """
@@ -78,8 +78,7 @@ module Tournament
       download_current_dataset(api::TournamentAPI, 
                                 dest_path::String=".", 
                                 dest_filename::Union{String,Nothing}=nothing,
-                                unzip::Bool=true, 
-                                tournament::Int=TOURNAMENT,
+                                unzip::Bool=true,
                                 show_progress_bar::Bool=true)::String
 
   Download dataset for the current active round.
@@ -87,17 +86,16 @@ module Tournament
   # Example
   ```julia-repl
   julia>  download_current_dataset(tournament_api)
-  ````
+  ```
   """
   function download_current_dataset(api::TournamentAPI; 
                                       dest_path::String=".", 
                                       dest_filename::Union{String,Nothing}=nothing,
                                       unzip::Bool=true, 
-                                      tournament::Int=TOURNAMENT,
                                       show_progress_bar::Bool=true)::String
 
     if isnothing(dest_filename)
-      round_number = get_current_round(api, tournament)
+      round_number = get_current_round(api)
       dest_filename = "numerai_dataset_$(round_number).zip"
     else
       if unzip & !endswith(dest_filename, ".zip")
@@ -113,7 +111,7 @@ module Tournament
 
     ensure_directory_exists(dest_path)
 
-    url = get_dataset_url(api, tournament=tournament)
+    url = get_dataset_url(api)
     download_file(url, dataset_path, show_progress_bar=show_progress_bar)
 
     if unzip
@@ -126,14 +124,16 @@ module Tournament
 
 
   """
-    get_latest_data_url(api::TournamentAPI, data_type::String, extension::String) -> String
+      get_latest_data_url(api::TournamentAPI, 
+                          data_type::String, 
+                          extension::String)::String
 
   Fetch url of the latest data url for a specified data type
   
   # Example
   ```julia-repl
   julia>  get_latest_data_url(tournament_api, "validation", "csv")
-  ````
+  ```
   """
   function get_latest_data_url(api::TournamentAPI, data_type::String, extension::String)::String
     valid_extensions = ["csv", "csv.xz", "parquet"]
@@ -194,11 +194,16 @@ module Tournament
 
 
   """
-    get_competitions(api::TournamentAPI; tournament::Int=$(TOURNAMENT))
+      get_competitions(api::TournamentAPI)::Vector{Dict}
   
   Retrieves information about all competitions
+
+  # Example
+  ```julia-repl
+  julia>  get_competitions(tournament_api)
+  ```
   """
-  function get_competitions(api::TournamentAPI; tournament::Int=TOURNAMENT)::Vector{Dict}
+  function get_competitions(api::TournamentAPI)::Vector{Dict}
     query = """
       query(\$tournament: Int!) {
         rounds(tournament: \$tournament) {
@@ -215,7 +220,7 @@ module Tournament
         }
       }
     """
-    variables = Dict("tournament" => tournament)
+    variables = Dict("tournament" => api.tournament)
     result = raw_query(api, query, variables=variables)
     rounds = result["data"]["rounds"]
     for round in rounds
@@ -229,6 +234,16 @@ module Tournament
   end
 
 
+  """
+      get_tournaments(api::TournamentAPI; only_active::Bool=true)::Vector{Dict}
+  
+  Retrieves information about all competitions
+
+  # Example
+  ```julia-repl
+  julia>  get_tournaments(tournament_api)
+  ```
+  """  
   function get_tournaments(api::TournamentAPI; only_active::Bool=true)::Vector{Dict}
     query = """
       query {
@@ -249,11 +264,17 @@ module Tournament
 
 
   """
-    get_user_activities(api::TournamentAPI, username::String, tournament::Int=$(TOURNAMENT)) -> Vector{Dict}
+      get_user_activities(api::TournamentAPI, 
+                          username::String)::Vector{Dict}
 
   Get user activities (works for all users!).
+
+  # Example
+  ```julia-repl
+  julia>  get_user_activities(tournament_api)
+  ```  
   """
-  function get_user_activities(api::TournamentAPI, username::String; tournament::Int=TOURNAMENT)::Vector{Dict}
+  function get_user_activities(api::TournamentAPI, username::String)::Vector{Dict}
     query = """
         query(\$tournament: Int!
               \$username: String!) {
@@ -284,7 +305,7 @@ module Tournament
           }
         }
     """
-    variables = Dict("tournament" => tournament, "username" => username)
+    variables = Dict( "tournament" => api.tournament, "username" => username )
     data = raw_query(api, query, variables=variables)["data"]["userActivities"]
     # filter rounds with no activity
     data = filter(item -> !isnothing(item["submission"]["date"]), data)
@@ -306,12 +327,18 @@ module Tournament
 
 
   """
-    get_submission_filenames(api::TournamentAPI, tournament::Int=$(TOURNAMENT), round_num::Union{Int,Nothing}=nothing, model_id::Union{String,Nothing}=nothing)
+      get_submission_filenames(api::TournamentAPI;
+                                round_num::Union{Int,Nothing}=nothing, 
+                                model_id::Union{String,Nothing}=nothing)::Vector{Dict}
 
   Get filenames of the submission of the user.
+
+  # Example
+  ```julia-repl
+  julia>  get_submission_filenames(tournament_api)
+  ```  
   """
-  function get_submission_filenames(api::TournamentAPI; 
-                                      tournament::Int=TOURNAMENT, 
+  function get_submission_filenames(api::TournamentAPI;
                                       round_num::Union{Int,Nothing}=nothing, 
                                       model_id::Union{String,Nothing}=nothing)::Vector{Dict}
     query = """
@@ -328,7 +355,7 @@ module Tournament
         }
       }
     """
-    variables = Dict("modelId" =>  model_id)
+    variables = Dict( "modelId" =>  model_id )
     data = raw_query(api, query, variables=variables, authorization=true)["data"]["model"]
 
     data = filter(item -> item["selected"], data["submissions"])
@@ -338,24 +365,28 @@ module Tournament
       "filename" => item["filename"],
     ), data) 
 
+    filenames = filter(f -> f["tournament"] == api.tournament, filenames)
+
     if !isnothing(round_num)
       filenames = filter(f -> f["round_num"] == round_num, filenames)
     end
 
-    if !isnothing(tournament)
-      filenames = filter(f -> f["tournament"] == tournament, filenames)
-    end
-
-    sort!(filenames, by=f->(f["round_num"], f["tournament"]))
+    sort!(filenames, by=f -> f["round_num"])
     
     return filenames
   end
 
 
   """
-    get_payments(api::TournamentAPI; model_id::Union{String,Nothing}=nothing) -> Dict{String,Array}
+      get_payments(api::TournamentAPI; 
+                    model_id::Union{String,Nothing}=nothing)::Dict{String,Array}
 
   Get all your payments.
+
+  # Example
+  ```julia-repl
+  julia>  get_payments(tournament_api)
+  ```    
   """
   function get_payments(api::TournamentAPI; model_id::Union{String,Nothing}=nothing)::Dict{String,Array}
     # Todo add stakeBonusPayments?
@@ -410,9 +441,15 @@ module Tournament
 
 
   """
-    submission_status(api::TournamentAPI, model_id::Union{String,Nothing}=nothing) -> Union{Dict,Nothing}
+      submission_status(api::TournamentAPI, 
+                        model_id::Union{String,Nothing}=nothing)::Union{Dict,Nothing}
 
   Submission status of the last submission associated with the account
+
+  # Example
+  ```julia-repl
+  julia>  submission_status(tournament_api)
+  ```     
   """
   function submission_status(api::TournamentAPI; model_id::Union{String,Nothing}=nothing)::Union{Dict,Nothing}
     query = """
@@ -458,17 +495,23 @@ module Tournament
     if isempty(latestSubmission)
       return nothing
     end
+
     return latestSubmission[1]
   end
 
 
   """
-    upload_predictions(api::TournamentAPI, file_path::String, tournament::Int=$(TOURNAMENT), model_id::Union{String,Nothing}=nothing) -> String
+      upload_predictions(api::TournamentAPI, file_path::String, model_id::Union{String,Nothing}=nothing) -> String
   
   Upload predictions from file.
+
+  # Example
+  ```julia-repl
+  julia>  upload_predictions(tournament_api, "./predictions.csv")
+  ```     
   """
   function upload_predictions(api::TournamentAPI, file_path::String; 
-                                tournament::Int=TOURNAMENT, model_id::Union{String,Nothing}=nothing)::String
+                                model_id::Union{String,Nothing}=nothing)::String
     @info "uploading predictions..."
     auth_query = """
       query(\$filename: String! \$tournament: Int! \$modelId: String) {
@@ -482,7 +525,7 @@ module Tournament
     """
     variables = Dict(
       "filename" => basename(file_path),
-      "tournament" => tournament,
+      "tournament" => api.tournament,
       "modelId" => model_id
     )
     submission_resp = raw_query(api, auth_query, variables=variables, authorization=true)
@@ -505,7 +548,7 @@ module Tournament
     """
     variables = Dict(
       "filename" => submission_auth["filename"],
-      "tournament" => tournament,
+      "tournament" => api.tournament,
       "modelId" => model_id
     )
     create = raw_query(api, create_query, variables=variables, authorization=true)
@@ -516,11 +559,16 @@ module Tournament
 
 
   """
-    check_new_round(api::TournamentAPI; hours::Int=24, tournament::Int=$(TOURNAMENT))
+      check_new_round(api::TournamentAPI; hours::Int=24)
   
   Check if a new round has started within the last `hours`.
+
+  # Example
+  ```julia-repl
+  julia>  check_new_round(tournament_api)
+  ```      
   """
-  function check_new_round(api::TournamentAPI; hours::Int=24, tournament::Int=TOURNAMENT)::Bool
+  function check_new_round(api::TournamentAPI; hours::Int=24)::Bool
     query = """
       query(\$tournament: Int!) {
         rounds(tournament: \$tournament number: 0) {
@@ -529,7 +577,7 @@ module Tournament
         }
       }
     """
-    variables = Dict("tournament" => tournament)
+    variables = Dict("tournament" => api.tournament)
     rounds = raw_query(api, query, variables=variables)["data"]["rounds"]
     if isempty(rounds)
       return false
@@ -557,9 +605,14 @@ module Tournament
 
 
   """
-    get_leaderboard(api::TournamentAPI; limit::Int=50, offset::Int=0)::Vector{Dict}
+      get_leaderboard(api::TournamentAPI; limit::Int=50, offset::Int=0)::Vector{Dict}
   
-  Get the current leaderboard    
+  Get the current leaderboard 
+  
+  # Example
+  ```julia-repl
+  julia>  get_leaderboard(tournament_api)
+  ```      
   """
   function get_leaderboard(api::TournamentAPI; limit::Int=50, offset::Int=0)::Vector{Dict}
     query = """
@@ -584,7 +637,7 @@ module Tournament
         }
       }
     """
-    variables = Dict("limit" => limit, "offset" => offset)
+    variables = Dict( "limit" => limit, "offset" => offset )
     data = raw_query(api, query, variables=variables)["data"]["v2Leaderboard"]
     for item in data
       item["nmrStaked"] = parse_float_string(item["nmrStaked"])
@@ -594,9 +647,14 @@ module Tournament
 
 
   """
-    stake_set(api::TournamentAPI, nmr::Union{Float64,String})::Union{Dict,Nothing}
+      stake_set(api::TournamentAPI, nmr::Union{Float64,String})::Union{Dict,Nothing}
   
   Set stake to value by decreasing or increasing your current stake
+  
+  # Example
+  ```julia-repl
+  julia>  stake_set(tournament_api, 1.0)
+  ```   
   """
   function stake_set(api::TournamentAPI, nmr::Union{Float64,String})::Union{Dict,Nothing}
     username = get_account(api)["username"]
@@ -625,7 +683,7 @@ module Tournament
 
 
   """
-    stake_get(api::TournamentAPI, username::String)::Float64
+      stake_get(api::TournamentAPI, username::String)::Float64
 
   Get your current stake amount.
   """
@@ -649,18 +707,16 @@ module Tournament
 
 
   """
-    stake_change(api::TournamentAPI, 
-                  nmr::Union{Float64,String};
-                  action::String="decrease", 
-                  model_id::Union{String,Nothing}=nothing,
-                  tournament::Int=TOURNAMENT)::Dict
+      stake_change(api::TournamentAPI, 
+                    nmr::Union{Float64,String};
+                    action::String="decrease", 
+                    model_id::Union{String,Nothing}=nothing)::Dict
   
   Change stake by `value` NMR.
   """
   function stake_change(api::TournamentAPI, nmr::Union{Float64,String};
                         action::String="decrease", 
-                        model_id::Union{String,Nothing}=nothing,
-                        tournament::Int=TOURNAMENT)::Dict
+                        model_id::Union{String,Nothing}=nothing)::Dict
     query = """
       mutation(\$value: String! \$type: String! \$tournamentNumber: Int! \$modelId: String) {
           v2ChangeStake(value: \$value type: \$type modelId: \$modelId tournamentNumber: \$tournamentNumber) {
@@ -675,7 +731,7 @@ module Tournament
       "value" => string(nmr),
       "type" => action,
       "modelId" => model_id,
-      "tournamentNumber" => tournament
+      "tournamentNumber" => api.tournament
     )
     result = raw_query(api, query, variables=variables, authorization=true)
     stake = result["data"]["v2ChangeStake"]
@@ -686,51 +742,50 @@ module Tournament
 
 
   """
-    stake_drain(api::TournamentAPI; 
-                model_id::Union{String,Nothing}=nothing, 
-                tournament::Int=TOURNAMENT)::Dict
+      stake_drain(api::TournamentAPI; 
+                  model_id::Union{String,Nothing}=nothing)::Dict
   
   Completely remove your stake.
   """
   function stake_drain(api::TournamentAPI; 
-                        model_id::Union{String,Nothing}=nothing, 
-                        tournament::Int=TOURNAMENT)::Dict
-    return stake_decrease(api, 11000000, model_id=model_id, tournament=tournament)
+                        model_id::Union{String,Nothing}=nothing)::Dict
+    return stake_decrease(api, 11000000, model_id=model_id)
   end
 
 
   """
-    stake_decrease(api::TournamentAPI, nmr::Union{Float64,String};
-                    model_id::Union{String,Nothing}=nothing,
-                    tournament::Int=TOURNAMENT)::Dict
+      stake_decrease(api::TournamentAPI, nmr::Union{Float64,String};
+                      model_id::Union{String,Nothing}=nothing)::Dict
   
   Decrease your stake by `value` NMR.
   """
   function stake_decrease(api::TournamentAPI, nmr::Union{Float64,String};
-                          model_id::Union{String,Nothing}=nothing,
-                          tournament::Int=TOURNAMENT)::Dict
-    return stake_change(api, nmr, action="decrease", model_id=model_id, tournament=tournament)
+                          model_id::Union{String,Nothing}=nothing)::Dict
+    return stake_change(api, nmr, action="decrease", model_id=model_id)
   end
 
 
   """
-    stake_increase(api::TournamentAPI, nmr::Union{Float64,String};
-                    model_id::Union{String,Nothing}=nothing,
-                    tournament::Int=TOURNAMENT)::Dict
+      stake_increase(api::TournamentAPI, nmr::Union{Float64,String};
+                      model_id::Union{String,Nothing}=nothing)::Dict
 
   Increase your stake by `value` NMR.
   """
   function stake_increase(api::TournamentAPI, nmr::Union{Float64,String};
-                          model_id::Union{String,Nothing}=nothing,
-                          tournament::Int=TOURNAMENT)::Dict
-    return stake_change(api, nmr, action="increase", model_id=model_id, tournament=tournament)
+                          model_id::Union{String,Nothing}=nothing)::Dict
+    return stake_change(api, nmr, action="increase", model_id=model_id)
   end
 
 
   """
-    public_user_profile(api::TournamentAPI, username::String)::Dict
+      public_user_profile(api::TournamentAPI, username::String)::Dict
   
   Fetch the public profile of a user.
+
+  # Example
+  ```julia-repl
+  julia>  public_user_profile(tournament_api, "pacio")
+  ```    
   """
   function public_user_profile(api::TournamentAPI, username::String)::Dict
     query = """
@@ -757,9 +812,9 @@ module Tournament
 
 
   """
-    daily_user_performances(api::TournamentAPI, username::String)::Vector{Dict}
+      daily_user_performances(api::TournamentAPI, username::String)::Vector{Dict}
   
-  Fetch daily performance of a user.
+  Fetch daily performance of a user
   """
   function daily_user_performances(api::TournamentAPI, username::String)::Vector{Dict}
     query = """
@@ -796,9 +851,14 @@ module Tournament
 
 
   """
-    round_details(api::TournamentAPI, round_num::Int)::Vector{Dict}
+      round_details(api::TournamentAPI, round_num::Int)::Vector{Dict}
   
   Fetch all correlation scores of a round.
+
+  # Example
+  ```julia-repl
+  julia>  round_details(tournament_api, 255)
+  ```
   """
   function round_details(api::TournamentAPI, round_num::Int)::Vector{Dict}
     query = """
@@ -824,9 +884,14 @@ module Tournament
 
 
   """
-    daily_submission_performances(api::TournamentAPI, username::String)::Vector{Dict}
+      daily_submission_performances(api::TournamentAPI, username::String)::Vector{Dict}
   
   Fetch daily performance of a user's submissions.
+
+  # Example
+  ```julia-repl
+  julia>  daily_submission_performances(tournament_api, "pacio")
+  ```  
   """
   function daily_submission_performances(api::TournamentAPI, username::String)::Vector{Dict}
     query = """
