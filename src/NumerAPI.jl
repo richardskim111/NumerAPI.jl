@@ -2,7 +2,8 @@ module NumerAPI
   
   using JSON, HTTP, Dates, TimeZones
 
-  export PUBLIC_DATASETS_URL,
+  export Tournament,
+         Signals,
          TournamentAPI,
          SignalsAPI,
          get_dataset_url,
@@ -45,7 +46,9 @@ module NumerAPI
   include("BaseAPI.jl")
 
   include("TournamentAPI.jl")
+  using .Tournament
 
   include("SignalsAPI.jl")
+  using .Signals
 
 end # module
