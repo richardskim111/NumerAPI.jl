@@ -1,6 +1,8 @@
 module Signals
   
   using JSON, HTTP, Dates, TimeZones
+  
+  include("Utils.jl")
   include("BaseAPI.jl")
 
   export SignalsAPI, 
@@ -10,8 +12,11 @@ module Signals
          public_user_profile,
          daily_user_performances,
          daily_submissions_performances,
-         download_validation_data
+         ticker_universe,
+         download_validation_data,
+         stake_get
          
+
 
   const SIGNALS_DOM = "https://numerai-signals-public-data.s3-us-west-2.amazonaws.com"
   const TOURNAMENT = 11
@@ -35,6 +40,37 @@ module Signals
                                     "$(SIGNALS_DOM)/signals_train_val_bbg.csv")
   end
 
+  """
+    get_account(api::SignalsAPI)::Dict{String,Any}
+
+  Get all information about your account
+  """
+  get_account(api::SignalsAPI)::Dict{String,Any} = _get_account(api)
+
+
+  """
+    get_models(api::SignalsAPI)::Dict{String,String}
+
+  Get mapping of account model names to model ids for convenience
+  """
+  get_models(api::SignalsAPI)::Dict{String,String} = _get_models(api)
+  
+  
+  """
+    get_current_round(api::SignalsAPI)::Union{Real,Nothing}
+
+  Get number of the current active round
+  """
+  get_current_round(api::SignalsAPI)::Union{Real,Nothing} = _get_current_round(api)
+
+
+  """
+    get_account_transactions(api::SignalsAPI)::Dict{String,Vector}
+
+  Get all your account deposits and withdrawals
+  """
+  get_account_transactions(api::SignalsAPI)::Dict{String,Vector} = _get_account_transactions(api)
+
 
   """
       get_leaderboard(api::SignalsAPI; limit::Int=50, offset::Int=0)::Vector{Dict}
@@ -48,7 +84,7 @@ module Signals
   # Example
   ```julia-repl
   julia> get_leaderboard(signal_api)
-  ````
+  ```
   """
   function get_leaderboard(api::SignalsAPI; limit::Int=50, offset::Int=0)::Vector{Dict}
     query = """
@@ -75,7 +111,7 @@ module Signals
       upload_predictions(api::SignalsAPI, file_path::String; 
                           model_id::Union{String,Nothing}=nothing)::String
   
-  Upload predictions from file.
+  Upload predictions from file
   """
   function upload_predictions(api::SignalsAPI, file_path::String; 
                                 model_id::Union{String,Nothing}=nothing)::String
@@ -113,9 +149,10 @@ module Signals
 
   """
       submission_status(api::SignalsAPI; model_id::Union{String,Nothing}=nothing)::Dict
+
   Submission status of the last submission associated with the account
   """
-  function submission_status(api::SignalsAPI; model_id::Union{String,Nothing}=nothing)::Dict
+  function submission_status(api::SignalsAPI; model_id::Union{String,Nothing}=nothing)::Vector{Dict}
     query = """
       query(\$modelId: String) {
           model(modelId: \$modelId) {
@@ -228,6 +265,11 @@ module Signals
       perf["date"] = parse_datetime_string(perf["date"])
       perf["submissionTime"] = parse_datetime_string(perf["submissionTime"])
     end
+
+    performances = filter(perf -> !isnothing(perf["date"]), performances)
+
+    sort!(performances, by=x -> (x["roundNumber"], x["date"]), rev=true)
+
     return performances
   end
 
@@ -273,7 +315,7 @@ module Signals
 
   """
       stake_get(api::SignalsAPI, username::String)::Real
-      
+
   Get current stake for a given users
   """
   function stake_get(api::SignalsAPI, username::String)::Real

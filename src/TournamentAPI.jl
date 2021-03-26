@@ -1,22 +1,29 @@
 module Tournament
 
   using JSON, HTTP, Dates, TimeZones
+  
+  include("Utils.jl")
   include("BaseAPI.jl")
 
 
   export TournamentAPI,
+          get_account,
           check_new_round,
-          daily_submission_performances,
+          daily_submissions_performances,
           daily_user_performances,
           download_current_dataset,
           download_latest_data,
-          get_competition,
+          get_account,
+          get_models,
+          get_current_round,
+          get_account_transactions,
+          get_competitions,
           get_dataset_url,
           get_latest_data_url,
           get_leaderboard,
           get_payments,
           get_submission_filenames,
-          get_tournament,
+          get_tournaments,
           get_user_activities,
           public_user_profile,
           round_details,
@@ -36,6 +43,7 @@ module Tournament
   const TOURNAMENT = 8
 
 
+
   struct TournamentAPI <: BaseAPI
     public_id::Union{String,Nothing}
     secret_key::Union{String,Nothing}
@@ -49,6 +57,39 @@ module Tournament
                         tournament::Int=TOURNAMENT)
     return TournamentAPI(public_id, secret_key, tournament, PUBLIC_DATASETS_URL)
   end
+
+
+  """
+    get_account(api::TournamentAPI)::Dict{String,Any}
+
+  Get all information about your account
+  """
+  get_account(api::TournamentAPI)::Dict{String,Any} = _get_account(api)
+
+
+  """
+    get_models(api::TournamentAPI)::Dict{String,String}
+
+  Get mapping of account model names to model ids for convenience
+  """
+  get_models(api::TournamentAPI)::Dict{String,String} = _get_models(api)
+  
+  
+  """
+    get_current_round(api::TournamentAPI)::Union{Real,Nothing}
+
+  Get number of the current active round
+  """
+  get_current_round(api::TournamentAPI)::Union{Real,Nothing} = _get_current_round(api)
+
+
+  """
+    get_account_transactions(api::TournamentAPI)::Dict{String,Vector}
+
+  Get all your account deposits and withdrawals
+  """
+  get_account_transactions(api::TournamentAPI)::Dict{String,Vector} = _get_account_transactions(api)
+
 
   """
       get_dataset_url(api::TournamentAPI)::String
@@ -488,14 +529,12 @@ module Tournament
           }
         }
     """
-
-    variables = Dict("modelId" => model_id)
+    variables = Dict( "modelId" => model_id )
     data = raw_query(api, query, variables=variables, authorization=true)
     latestSubmission = data["data"]["model"]["latestSubmission"]
     if isempty(latestSubmission)
       return nothing
     end
-
     return latestSubmission[1]
   end
 
@@ -584,8 +623,8 @@ module Tournament
     end
     round = rounds[1]
     open_time = parse_datetime_string(round["openTime"])
-    now = now(tz"UTC")
-    is_new_round = open_time > now - Dates.Hour(hours)
+    now_ = now(tz"UTC")
+    is_new_round = open_time > DateTime(now_,UTC) - Dates.Hour(hours)
     return is_new_round
   end
 
@@ -884,16 +923,16 @@ module Tournament
 
 
   """
-      daily_submission_performances(api::TournamentAPI, username::String)::Vector{Dict}
+      daily_submissions_performances(api::TournamentAPI, username::String)::Vector{Dict}
   
   Fetch daily performance of a user's submissions.
 
   # Example
   ```julia-repl
-  julia>  daily_submission_performances(tournament_api, "pacio")
+  julia>  daily_submissions_performances(tournament_api, "pacio")
   ```  
   """
-  function daily_submission_performances(api::TournamentAPI, username::String)::Vector{Dict}
+  function daily_submissions_performances(api::TournamentAPI, username::String)::Vector{Dict}
     query = """
       query(\$username: String!) {
         v2UserProfile(username: \$username) {
@@ -914,8 +953,17 @@ module Tournament
     for perf in performances
       perf["date"] = parse_datetime_string(perf["date"])
     end
+
+    performances = filter(perf -> !isnothing(perf["date"]), performances)
+
+    sort!(performances, by=x -> (x["roundNumber"], x["date"]), rev=true)
     
     return performances
   end
+
+
+
+
+
 
 end # module

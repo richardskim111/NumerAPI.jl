@@ -1,6 +1,8 @@
 module TestSignalsAPI
 
-  using Test, Dates, NumerAPI
+  using Test, Dates
+  using NumerAPI.Signals
+
 
   public_id = ENV["NUMERAI_PUBLIC_ID"]
   secret_key = ENV["NUMERAI_SECRET_KEY"]
@@ -12,8 +14,10 @@ module TestSignalsAPI
 
   
   @testset "test get_leaderboard" begin
-    
+    data = get_leaderboard(signals_api)
 
+    @test typeof(data) <: Vector
+    @test length(data) == 50
   end
 
 
@@ -24,12 +28,16 @@ module TestSignalsAPI
 
 
   @testset "test daily_submissions_performances" begin
-    
+    data = submission_status(signals_api, model_id = model_id)
+
+    @test typeof(data) <: Vector
   end
 
 
   @testset "test daily_user_performances" begin
-    
+    data = daily_user_performances(signals_api, username)
+
+    @test typeof(data) <: Vector{Dict}
   end
 
 
@@ -38,5 +46,29 @@ module TestSignalsAPI
 
     @test typeof(tickers) == Vector{String}
   end
+
+
+  @testset "test daily_submissions_performances" begin
+    data = daily_submissions_performances(signals_api, username)
+    
+    @test typeof(data) <: Vector{Dict}
+  end
+
+
+  @testset "test stake_get" begin
+    data = stake_get(signals_api, username)    
+    
+    @test typeof(data) <: Real
+  end
+
+
+  @testset "test public_user_profile" begin
+    data = public_user_profile(signals_api, username)    
+    
+    @test typeof(data) <: Dict
+    @test haskey(data, "username")
+    @test data["username"] == username
+  end
+
 
 end # module
