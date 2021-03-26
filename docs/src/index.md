@@ -62,4 +62,4 @@ status = submission_status(signals_api, model_id)
 ```
 
 ## Contributions
-
+Contributions are always welcome.  Please report any issues and bugs that you encounter in [issues](https://github.com/richardskim111/NumerAPI/issues).
