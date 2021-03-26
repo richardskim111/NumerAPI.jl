@@ -29,7 +29,6 @@ module TestTournamentAPI
     @test dataset_path === "./numerai_dataset_$(current_round).zip"
 
     rm(dataset_path, force=true)
-    rm(dataset_path[1:end-4], force=true, recursive=true)
   end  
   
 
@@ -144,11 +143,13 @@ module TestTournamentAPI
   end
 
   @testset "test upload_predictions" begin
-    # TODO
-    # submission_id = upload_predictions(tournament_api, "./prediction.csv"; model_id=model_id)
+    current_round = get_current_round(tournament_api)
+    prediction_data_path = "./numerai_dataset_$(current_round)/example_predictions.csv"
+    submission_id = upload_predictions(tournament_api, prediction_data_path; model_id=model_id)
 
-    # println(submission_id)
-    # @test isa(submission_id, String)
+    @test isa(submission_id, String)
+        
+    rm("./numerai_dataset_$(current_round)", force=true, recursive=true)
   end
 
 
@@ -182,6 +183,12 @@ module TestTournamentAPI
     leaderboard = get_leaderboard(tournament_api)
 
     @test length(leaderboard) === 50
+
+    leader1 = get_leaderboard(tournament_api, limit=1)
+    @test leader1[1] == leaderboard[1]
+
+    leader2 = get_leaderboard(tournament_api, limit=1, offset=1)
+    @test leader2[1] == leaderboard[2]
   end
 
 

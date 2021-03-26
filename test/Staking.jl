@@ -1,27 +1,30 @@
 module TestStaking
 
-  using Test, Dates, NumerAPI
+  using Test, Dates
+  using NumerAPI.Tournament
 
   public_id = ENV["NUMERAI_PUBLIC_ID"]
   secret_key = ENV["NUMERAI_SECRET_KEY"]
+
   username = ENV["TOURNAMENT_USERNAME"]
   model_id = ENV["TOURNAMENT_MODEL_ID"]
 
   tournament_api = TournamentAPI(public_id, secret_key)
 
   
-  @testset "test state_set" begin
-    
-  end
+  # @testset "test state_set" begin
+  #   nmr = 0.01
+  #   stake = stake_set(tournament_api, username, nmr)
+
+  #   println(stake)
+
+  # end
 
 
   @testset "test stake_get" begin
-    
-  end
+    stake = stake_get(tournament_api, username)
 
-
-  @testset "test stake_change" begin
-    
+    @test stake === 0.01
   end
 
 
@@ -38,5 +41,6 @@ module TestStaking
   @testset "test stake_increase" begin
     
   end
+
 
 end # module

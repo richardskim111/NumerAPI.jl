@@ -34,6 +34,15 @@ module TestSignalsAPI
   end
 
 
+  @testset "test public_user_profile" begin
+    data = public_user_profile(signals_api, username)    
+    
+    @test typeof(data) <: Dict
+    @test haskey(data, "username")
+    @test data["username"] == username
+  end
+
+
   @testset "test daily_user_performances" begin
     data = daily_user_performances(signals_api, username)
 
@@ -55,6 +64,16 @@ module TestSignalsAPI
   end
 
 
+  @testset "test download_validation_data" begin
+    data_path = download_validation_data(signals_api)
+
+    @test data_path === "./numerai_signals_historical.csv"
+    @test isfile(data_path)
+
+    rm(data_path, force=true)
+  end
+
+
   @testset "test stake_get" begin
     data = stake_get(signals_api, username)    
     
@@ -62,13 +81,7 @@ module TestSignalsAPI
   end
 
 
-  @testset "test public_user_profile" begin
-    data = public_user_profile(signals_api, username)    
-    
-    @test typeof(data) <: Dict
-    @test haskey(data, "username")
-    @test data["username"] == username
-  end
+
 
 
 end # module
