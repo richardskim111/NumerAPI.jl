@@ -1,8 +1,6 @@
 # NumerAPI.jl
 
-Julia API to programmatically download and upload data for the Numerai machine learning competition. 
-
-This library was inspired by Numerai Python API by [uuazed/numerapi](https://github.com/uuazed/numerapi).
+Julia API to programmatically download and upload data for the Numerai machine learning competition. This library was inspired by Numerai Python API by [uuazed/numerapi](https://github.com/uuazed/numerapi).
 
 
 ## Installation
