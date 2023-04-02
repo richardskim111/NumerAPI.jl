@@ -6,7 +6,7 @@ Julia API to programmatically download and upload data for the Numerai machine l
 ## Installation
 
 ```julia-repl
-(@v1.5) pkg> add NumerAPI
+(@v1.9) pkg> add NumerAPI
 ```
 
 
@@ -16,7 +16,7 @@ using NumerAPI.Tournament
 
 # Download Current Dataset
 tournament_api = TournamentAPI()
-file_path = download_latest_data(tournament_api)
+download_dataset(tournament_api,"v3/numerai_live_data.parquet", "numerai_live_data.parquet"))
 
 # Get Current Leaderboard
 leaderboard = get_leaderboard(tournament_api, limit=25)

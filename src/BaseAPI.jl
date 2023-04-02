@@ -7,7 +7,40 @@ function _handle_call_error()
   # TODO
 end
 
+@doc raw"""Send a raw request to the Numerai's GraphQL API.
 
+This function allows to build your own queries and fetch results from
+Numerai's GraphQL API. Checkout
+https://medium.com/numerai/getting-started-with-numerais-new-tournament-api-77396e895e72
+for an introduction and https://api-tournament.numer.ai/ for the
+documentation.
+
+Args:
+    query (str): your query
+    variables (dict, optional): dict of variables
+    authorization (bool, optional): does the request require
+        authorization, defaults to `False`
+    retries (int): for 5XX errors, how often should numerapi retry
+    delay (int): in case of retries, how many seconds to wait between tries
+    backoff (int): in case of retries, multiplier to increase the delay between retries
+
+Returns:
+    dict: Result of the request
+
+Raises:
+    ValueError: if something went wrong with the requests. For example,
+        this could be a wrongly formatted query or a problem at
+        Numerai's end. Have a look at the error messages, in most cases
+        the problem is obvious.
+
+Example:
+    >>> query = '''query($tournament: Int!)
+                    {rounds(tournament: $tournament number: 0)
+                    {number}}'''
+    >>> args = {'tournament': 1}
+    >>> NumerAPI().raw_query(query, args)
+    {'data': {'rounds': [{'number': 104}]}}
+"""
 function raw_query(api::BaseAPI, query::String;
                     variables::Union{Dict,Nothing}=nothing,
                     authorization::Bool=false)::Dict
