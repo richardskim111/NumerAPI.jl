@@ -37,13 +37,14 @@ export TournamentAPI,
         tournament_name2number,
         tournament_number2name,
         upload_predictions,
-        download_dataset
+        download_dataset,
+        list_datasets
 
 
 const PUBLIC_DATASETS_URL = "https://numerai-public-datasets.s3-us-west-2.amazonaws.com"
 const TOURNAMENT = 8
 const StrOrNo=Union{String,Nothing}
-
+const IntOrNo=Union{Int,Nothing}
 
 struct TournamentAPI <: BaseAPI
     public_id::Union{String,Nothing}
@@ -217,18 +218,50 @@ download_file(url, dataset_path, show_progress_bar=show_progress_bar)
 return nothing
 end
 
+"""List of available data files
+
+Args:
+    round_num (int, optional): tournament round you are interested in.
+        defaults to the current round
+Returns:
+    list of str: filenames
+Example:
+```julia
+    julia> tournament_api = TournamentAPI()
+    julia> list_datasets(tournament_api)
+ "v3/features.json"
+ "v3/numerai_datasets.zip"
+ "v3/numerai_live_data.csv"
+ "v3/numerai_live_data.parquet"
+ "v3/numerai_live_data_int8.csv"
+ "v3/numerai_live_data_int8.parquet"
+ "v3/numerai_tournament_data.csv"
+```
+"""
+function list_datasets(api::TournamentAPI,round_num::IntOrNo = nothing)
+    query = raw"""
+        query ($round: Int) {
+            listDatasets(round: $round)
+        }"""
+    args = Dict("round"=>round_num)
+    raw_query(api,query;variables=args)["data"]["listDatasets"]
+end
+
 """ Download specified file for the given round.
 
 Args:
+    api (TournamentAPI)
     filename (str): file to be downloaded, defaults to live data
     dest_path (str, optional): complete path where the file should be
         stored, defaults to the same name as the source file
     round_num (int, optional): tournament round you are interested in.
         defaults to the current round
-
+    show_progress_bar (bool, optional):show progress bar
 Example:
-    >>> tournament_api = TournamentAPI()
-    >>> download_dataset(tournament_api,filenames[0])
+```julia
+    julia> tournament_api = TournamentAPI()
+    julia> download_dataset(tournament_api,"v3/numerai_live_data.parquet", "numerai_live_data.parquet"))
+```
 """
 function download_dataset(api::TournamentAPI,filename::String = "numerai_live_data.csv",
                             dest_path::String = filename,
