@@ -2,10 +2,11 @@ using ProgressMeter, InfoZIP
 using HTTP.IOExtras
 using Base.Filesystem: IOError
 
-
-function post_with_err_handling(url, body, headers; timeout=0)
+"send `post` request and handle (some) errors that might occur"
+function post_with_err_handling(url, body, headers;timeout::Int = 10,
+  retries::Int = 3, delay::Int = 1, backoff::Int = 2)::Dict
   try
-    resp = HTTP.post(url, headers=headers, body=JSON.json(body), readtimeout=timeout)
+    resp = HTTP.post(url,headers,body=JSON.json(body),readtimeout =timeout,retries,retry_delay=ExponentialBackOff(;n=retries, first_delay=delay,jitter=backoff))
     return JSON.parse(String(resp.body))
   catch e
     return Dict()
